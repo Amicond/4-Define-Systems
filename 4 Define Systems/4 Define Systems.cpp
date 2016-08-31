@@ -16,15 +16,17 @@ const string res="results";
 const string loop="l";
 const string n_loop="nl";
 const string n_single="ns";
-const string math_res="results";
-const string delim="\\";
-const string math_delim="\\\\";
+const string delim = "\\";
+const string math_delim = "\\\\";
+const string math_res="results"+math_delim+"triangle";
+
+
 string root_path;
 
 vector<string> my_points;
 const int J1=1;
 vector<int> good_nl[5];//с запасом: 0+5=5, 4+5=9 - до 9 порядка
-void define_term(ofstream &math_out,string &point,int type,int order,int subOrder,int &Total,ofstream &out,int term_amount[][3],int step,int plaquet_type)
+void define_term(ofstream &math_out,int type,int order,int subOrder,int &Total,ofstream &out,int term_amount[][3],int step,int plaquet_type)
 {
 	ostringstream fname,tmpStr;
 	ifstream cur_f;
@@ -53,9 +55,9 @@ void define_term(ofstream &math_out,string &point,int type,int order,int subOrde
 		{
 			out.close();
 			fname.str("");
-			fname<<res<<delim<<point<<delim<<"!_"<<order<<"_results_J2="<<point<<"("<<Total/step<<").txt";
+			fname<<res<<delim<<"!_"<<order<<"_results_("<<Total/step<<").txt";
 			//добавляем в авто файл
-			math_out<<"nb1= NotebookOpen[StringJoin[{NotebookDirectory[], \""<<"!_"<<order<<"_results_J2="<<point<<"("<<Total/step<<").txt"<<"\"}]];\n";
+			math_out<<"nb1= NotebookOpen[StringJoin[{NotebookDirectory[], \""<<"!_"<<order<<"_results_J2=("<<Total/step<<").txt"<<"\"}]];\n";
 			math_out<<"NotebookEvaluate[nb1];\n";
 			math_out<<"NotebookClose[nb1];\n";
 			//конец добавки
@@ -65,23 +67,23 @@ void define_term(ofstream &math_out,string &point,int type,int order,int subOrde
 		fname.str("");
 		if(type==0)
 		{
-			fname<<root_path<<"results_"<<loop<<delim<<order<<"ord"<<delim<<order<<"_"<<subOrder<<"_"<<j<<"_res_"<<loop<<"_clean.txt";
+			fname<<root_path<<"results_"<<loop<<delim<<order<<delim<<subOrder<<delim<<order<<"_"<<subOrder<<"_"<<j << "_" << plaquet_type <<"_res_"<<loop<<".txt";
 			temp=loop;
 		}
 		if(type==1)
 		{
-			fname<<root_path<<"results_"<<n_loop<<delim<<order<<"ord"<<delim<<order<<"_"<<subOrder<<"_"<<j<<"_res_"<<n_loop<<"_clean.txt";
+			fname<<root_path<<"results_"<<n_loop<<delim<<order<< delim << subOrder <<delim<<order<<"_"<<subOrder<<"_"<<j << "_" << plaquet_type <<"_res_"<<n_loop<< ".txt";
 			temp=n_loop;
 		}
 		if(type==2)
 		{
-			fname<<root_path<<"results_"<<n_single<<delim<<order<<"ord"<<delim<<order<<"_"<<subOrder<<"_"<<j<<"_res_"<<n_single<<"_clean.txt";
+			fname<<root_path<<"results_"<<n_single<<delim<<order<< delim << subOrder <<delim<<order<<"_"<<subOrder<<"_"<<j << "_" << plaquet_type <<"_res_"<<n_single<<".txt";
 			temp=n_single;
 		}
 		cur_f.open(fname.str(),ios::in);
 		cur_f>>size;
 		tmpStr.str("");
-		tmpStr<<"res"<<temp<<"$"<<order<<"$"<<subOrder<<"$"<<j;
+		tmpStr<<"res"<<temp<<"$"<<order<<"$"<<subOrder<<"$"<<j<<"$"<<plaquet_type;
 		out<<tmpStr.str()<<"=";
 		while(!cur_f.eof())
 		{
@@ -101,8 +103,8 @@ void define_term(ofstream &math_out,string &point,int type,int order,int subOrde
 			case 128: temp="7"; break;
 			case 256: temp="8"; break;
 		}
-		out<<temp<<"=="<<tmpStr.str()<<"/.{J1->1,J2->"<<point<<"},Var"<<temp<<"]]];\n";
-		out<<"tt = OpenWrite[\"D:"<<math_delim<<math_res<<math_delim<<point<<math_delim<<tmpStr.str()<<"_"<<point<<".txt\"];\n";
+		out<<temp<<"=="<<tmpStr.str()<<"/.{J1->1,J2->0},Var"<<temp<<"]]];\n";
+		out<<"tt = OpenWrite[\"D:"<<math_delim<<math_res<<math_delim<<tmpStr.str()<<".txt\"];\n";
 		out<<"If[Length[Eff"<<tmpStr.str()<<"]==0,Write[tt,\""<<order<<" "<<subOrder<<" "<<j<<"\"];];\n";
 		out<<"For[i = 1, i <= Length[Eff"<<tmpStr.str()<<"[[1]]], i++,\n";
 		out<<"	 WriteString[tt,";
@@ -170,13 +172,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		in.close();
 	}
 	conf.close();
-	ifstream my_points_f("points.txt",ios::in);
-	for(int jj=1;jj<=amount;jj++)
-	{
-		getline(my_points_f,temp);
-		my_points.push_back(temp);
-	}
-	my_points_f.close();
+	
 
 	int Total=0;
 	ofstream out_sys;
@@ -208,67 +204,66 @@ int _tmain(int argc, _TCHAR* argv[])
 	//}
 
 	int step=50;//количество слагаемых через которое надо начинать новый файл
-	for(int jj=0;jj<amount;jj++)//перебираем все точки
+	
+	fname.str("");
+	fname<<res<<delim<<order<<"_general_math.txt";
+	math_out.open(fname.str(),ios::out);
+	fname.str("");
+	fname<<sys<<delim<<"sys"<<order<<".txt";
+	ifstream sysIn(fname.str(),ios::in);
+	while(!sysIn.eof())
 	{
-		fname.str("");
-		fname<<res<<delim<<my_points[jj]<<delim<<order<<"_"<<my_points[jj]<<"general_math.txt";
-		math_out.open(fname.str(),ios::out);
-		fname.str("");
-		fname<<sys<<delim<<"sys"<<order<<".txt";
-		ifstream sysIn(fname.str(),ios::in);
-		while(!sysIn.eof())
-		{
-			getline(sysIn,temp);
-			if(temp.length()>0)
-				math_out<<temp<<"\n";
-		}
-		sysIn.close();
-		if(mode==1)//full mode
-			subOrder=2;
-		else
-			subOrder=order;
-		for(;subOrder<=order;subOrder++)
-		{
-			Total=0;
-			if(subOrder<6)
-				step=50;
-			else if(subOrder>=6)
-				step=20;
-			//else
-			//	step=5;
-			fname.str("");
-			fname<<res<<delim<<my_points[jj]<<delim<<"!_"<<subOrder<<"_results_J2="<<my_points[jj]<<"("<<Total/step<<").txt";
-			//добавляем в авто файл
-			
-			math_out<<"nb1= NotebookOpen[StringJoin[{NotebookDirectory[], \"!_"<<subOrder<<"_results_J2="<<my_points[jj]<<"("<<Total/step<<").txt"<<"\"}]];\n";
-			math_out<<"NotebookEvaluate[nb1];\n";
-			math_out<<"NotebookClose[nb1];\n";
-			//конец добавки
-			out.open(fname.str(),ios::out);
-
-			
-			for(int i=2;i<=subOrder;i++)
-			{			
-				for (int ll = 0; ll < 3; ll++)
-				{
-					cout << my_points[jj] << " " << i << " l\n";
-					define_term(math_out, my_points[jj], 0, subOrder, i, Total, out, term_amount, step,ll);
-
-					//все тоже самое, только для nl матриц
-					cout << my_points[jj] << " " << i << " nl\n";
-					define_term(math_out, my_points[jj], 1, subOrder, i, Total, out, term_amount, step,ll);
-
-
-					//все тоже самое, только для n_single матриц
-					cout << my_points[jj] << " " << i << " ns\n";
-					define_term(math_out, my_points[jj], 2, subOrder, i, Total, out, term_amount, step,ll);
-				}
-
-			}
-			out.close();
-		}
-		math_out.close();
+		getline(sysIn,temp);
+		if(temp.length()>0)
+			math_out<<temp<<"\n";
 	}
+	sysIn.close();
+	if(mode==1)//full mode
+		subOrder=2;
+	else
+		subOrder=order;
+	for (; subOrder <= order; subOrder++)
+	{
+		Total = 0;
+		if (subOrder < 6)
+			step = 50;
+		else if (subOrder >= 6)
+			step = 20;
+		//else
+		//	step=5;
+		fname.str("");
+		fname << res << delim << "!_" << subOrder << "_results_(" << Total / step << ").txt";
+		//добавляем в авто файл
+
+		math_out << "nb1= NotebookOpen[StringJoin[{NotebookDirectory[], \"!_" << subOrder << "_results_(" << Total / step << ").txt" << "\"}]];\n";
+		math_out << "NotebookEvaluate[nb1];\n";
+		math_out << "NotebookClose[nb1];\n";
+		//конец добавки
+		out.open(fname.str(), ios::out);
+
+
+		for (int i = 2; i <= subOrder; i++)
+		{
+			for (int ll = 0; ll < 3; ll++)
+			{
+				cout << i << " l\n";
+				define_term(math_out, 0, subOrder, i, Total, out, term_amount, step, ll);
+
+				//все тоже самое, только для nl матриц
+				cout << i << " nl\n";
+				define_term(math_out, 1, subOrder, i, Total, out, term_amount, step, ll);
+
+
+				//все тоже самое, только для n_single матриц
+				cout << i << " ns\n";
+				define_term(math_out, 2, subOrder, i, Total, out, term_amount, step, ll);
+			}
+
+		}
+		out.close();
+	}
+	math_out.close();
+	
 	return 0;
 }
 
